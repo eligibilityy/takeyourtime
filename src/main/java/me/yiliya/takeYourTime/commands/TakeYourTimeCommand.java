@@ -1,8 +1,10 @@
-package me.yiliya.takeYourTime;
+package me.yiliya.takeYourTime.commands;
 
+import me.yiliya.takeYourTime.TakeYourTime;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 public class TakeYourTimeCommand implements CommandExecutor {
 
@@ -13,20 +15,20 @@ public class TakeYourTimeCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("§aTakeYourTime §f- A day and clock display plugin.");
+            sender.sendMessage("§4TakeYourTime §f- A day and clock display plugin.");
             sender.sendMessage("§7Usage: /tyt reload");
             return true;
         }
 
         if (args[0].equalsIgnoreCase("reload")) {
             plugin.reloadConfig();
-            sender.sendMessage("§aTakeYourTime config reloaded.");
+            sender.sendMessage("§eTakeYourTime config reloaded.");
             return true;
         }
 
-        sender.sendMessage("§cUnknown subcommand. Use /tyt reload");
+        sender.sendMessage("§cUnknown subcommand. Available subcommands: §freload");
         return true;
     }
 }
