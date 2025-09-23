@@ -2,6 +2,8 @@ package me.yiliya.takeYourTime;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.time.Clock;
+
 public final class TakeYourTime extends JavaPlugin {
 
     private static TakeYourTime instance;
@@ -17,17 +19,10 @@ public final class TakeYourTime extends JavaPlugin {
         playerDataHandler.load();
 
         // Register commands
-        if (getCommand("clock") != null) {
-            getCommand("clock").setExecutor(new ClockCommand(this));
-        } else {
-            getLogger().severe("Command 'clock' is missing in plugin.yml!");
-        }
+        getCommand("clock").setExecutor(new ClockCommand(this));
+        getCommand("clock").setTabCompleter(new TytTabCompleter());
 
-        if (getCommand("takeyourtime") != null) {
-            getCommand("takeyourtime").setExecutor(new TakeYourTimeCommand(this));
-        } else {
-            getLogger().severe("Command 'takeyourtime' is missing in plugin.yml!");
-        }
+        getCommand("takeyourtime").setExecutor(new TakeYourTimeCommand(this));
 
         // Start clock manager
         clockManager = new ClockManager(this);
