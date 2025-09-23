@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TytTabCompleter implements TabCompleter {
@@ -17,13 +18,21 @@ public class TytTabCompleter implements TabCompleter {
             if (args.length == 1) {
                 suggestions.add("on");
                 suggestions.add("off");
-                suggestions.add("info");
+                suggestions.add("mode");
             } else if (args.length == 2 && args[0].equalsIgnoreCase("mode")) {
                 suggestions.add("actionbar");
                 suggestions.add("bossbar");
             }
         }
 
-        return suggestions;
+        if (command.getName().equalsIgnoreCase("tyt")) {
+            if (args.length == 1) {
+                if ("reload".startsWith(args[0].toLowerCase())) {
+                    suggestions.add("reload");
+                }
+            }
+        }
+
+        return suggestions.isEmpty() ? Collections.emptyList() : suggestions;
     }
 }

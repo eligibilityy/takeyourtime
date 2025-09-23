@@ -1,10 +1,8 @@
 package me.yiliya.takeYourTime;
 
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.ChatColor;
 
 public class TakeYourTimeCommand implements CommandExecutor {
 
@@ -16,16 +14,19 @@ public class TakeYourTimeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String name = plugin.getDescription().getName();
-        String version = plugin.getDescription().getVersion();
-        String author = String.join(", ", plugin.getDescription().getAuthors());
+        if (args.length == 0) {
+            sender.sendMessage("§aTakeYourTime §f- A day and clock display plugin.");
+            sender.sendMessage("§7Usage: /tyt reload");
+            return true;
+        }
 
-        sender.sendMessage(ChatColor.GOLD + "==== " + name + " ====");
-        sender.sendMessage(ChatColor.YELLOW + "Version: " + ChatColor.WHITE + version);
-        sender.sendMessage(ChatColor.YELLOW + "Author(s): " + ChatColor.WHITE + author);
-        sender.sendMessage(ChatColor.YELLOW + "Description: " + ChatColor.WHITE + plugin.getDescription().getDescription());
-        sender.sendMessage(ChatColor.GOLD + "====================");
+        if (args[0].equalsIgnoreCase("reload")) {
+            plugin.reloadConfig();
+            sender.sendMessage("§aTakeYourTime config reloaded.");
+            return true;
+        }
 
+        sender.sendMessage("§cUnknown subcommand. Use /tyt reload");
         return true;
     }
 }
