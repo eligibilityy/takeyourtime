@@ -1,6 +1,6 @@
 name: TakeYourTime
 main: me.yiliya.takeYourTime.TakeYourTime
-version: '1.0'
+version: '1.1'
 api-version: '1.21'
 author: Yiliya
 description: A Minecraft plugin that adds a customizable in-game clock with bossbar/actionbar support.
@@ -8,12 +8,7 @@ description: A Minecraft plugin that adds a customizable in-game clock with boss
 commands:
   clock:
     description: Toggle or configure the in-game clock
-    usage: |
-      /clock on - Enable the clock display
-      /clock off - Disable the clock display
-      /clock mode <actionbar|bossbar> - Change display mode
-
-  takeyourtime:
+    usage: /clock <args>
+  tyt:
     description: Show information about the TakeYourTime plugin
-    usage: /<command>
-    aliases: [tyt]
+    usage: /tyt

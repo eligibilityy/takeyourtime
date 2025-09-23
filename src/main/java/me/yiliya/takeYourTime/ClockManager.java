@@ -23,17 +23,29 @@ public class ClockManager {
     }
 
     public void start() {
+        long updateInterval = plugin.getConfig().getLong("update-interval", 20L);
+
         new BukkitRunnable() {
             @Override
             public void run() {
                 World world = Bukkit.getWorlds().getFirst();
+                long time = world.getTime();
 
-                // Correct sources:
-                long dayTime = world.getTime(); // 0–23999 (current day ticks)
-                long fullTime = world.getFullTime(); // total ticks since world creation
-                long days = fullTime / 24000L; // 1 MC day = 24000 ticks
+                long days;
+                String mode = plugin.getConfig().getString("counter-mode", "gametime");
 
-                String timeString = parseTime(dayTime) + " | Day " + days;
+                if (mode.equalsIgnoreCase("gametime")) {
+                    days = world.getGameTime() / 24000L;
+                } else {
+                    days = world.getFullTime() / 24000L;
+                }
+
+                String timeString = parseTime(time) + " | Day " + days;
+
+                double progress = (time % 24000L) / 24000.0;
+
+                // Get color using gradual phase steps
+                BarColor barColor = getBossBarColor(time);
 
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     ClockSettings settings = plugin.getPlayerDataHandler().getSettings(player.getUniqueId());
@@ -45,9 +57,18 @@ public class ClockManager {
 
                     if (settings.mode().equalsIgnoreCase("bossbar")) {
                         BossBar bar = bossBarMap.computeIfAbsent(player.getUniqueId(),
-                                k -> Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID));
+                                k -> Bukkit.createBossBar("", barColor, BarStyle.SOLID));
                         bar.setTitle(timeString);
-                        bar.addPlayer(player);
+                        bar.setProgress(progress);
+
+                        // Update color dynamically if it changed
+                        if (bar.getColor() != barColor) {
+                            bar.setColor(barColor);
+                        }
+
+                        if (!bar.getPlayers().contains(player)) {
+                            bar.addPlayer(player);
+                        }
                     } else {
                         player.spigot().sendMessage(
                                 ChatMessageType.ACTION_BAR,
@@ -57,21 +78,49 @@ public class ClockManager {
                     }
                 }
             }
-        }.runTaskTimer(plugin, 0L, 20L);
+        }.runTaskTimer(plugin, 0L, updateInterval);
     }
 
     private void removeBossBar(Player player) {
         BossBar bar = bossBarMap.remove(player.getUniqueId());
-        if (bar != null) {
-            bar.removeAll();
+        if (bar != null) bar.removeAll();
+    }
+
+    /**
+     * Stepwise gradual bossbar color based on Minecraft ticks
+     */
+    private BarColor getBossBarColor(long time) {
+        String defaultColorStr = plugin.getConfig().getString("bossbar.defaultColor", "WHITE").toUpperCase();
+        String dawnColor = plugin.getConfig().getString("bossbar.dawnColor", "PINK").toUpperCase();
+        String dayColor = plugin.getConfig().getString("bossbar.dayColor", "YELLOW").toUpperCase();
+        String duskColor = plugin.getConfig().getString("bossbar.duskColor", "RED").toUpperCase();
+        String nightColor = plugin.getConfig().getString("bossbar.nightColor", "PURPLE").toUpperCase();
+
+        try {
+            if (time < 1000) {
+                return time < 500 ? BarColor.valueOf(dawnColor) : BarColor.YELLOW;
+            } else if (time < 12000) {
+                // Day: early = BLUE, mid = GREEN, late = YELLOW
+                if (time < 4000) return BarColor.valueOf(dayColor);
+                else if (time < 8000) return BarColor.YELLOW;
+                else return BarColor.YELLOW;
+            } else if (time < 13000) {
+                // Dusk: early = RED, late = PURPLE
+                return time < 12500 ? BarColor.valueOf(duskColor) : BarColor.PURPLE;
+            } else {
+                return time < 20000 ? BarColor.valueOf(nightColor) : BarColor.BLUE;
+            }
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger().warning("Invalid bossbar color in config.yml, defaulting to WHITE");
+            return BarColor.WHITE;
         }
     }
 
     /**
-     * Converts Minecraft time (0–23999 ticks) into a 12-hour clock format.
+     * Converts Minecraft time (0–23999 ticks) into 12-hour format
      */
     public static String parseTime(long time) {
-        long hours = time / 1000 + 6; // MC day starts at 6:00
+        long hours = time / 1000 + 6;
         long minutes = (time % 1000) * 60 / 1000;
         String ampm = "AM";
 

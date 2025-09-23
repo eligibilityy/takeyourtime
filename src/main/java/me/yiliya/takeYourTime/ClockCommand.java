@@ -15,7 +15,7 @@ public class ClockCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage("Only players can use this command!");
+            sender.sendMessage("Only players can use this command.");
             return true;
         }
 
@@ -48,19 +48,6 @@ public class ClockCommand implements CommandExecutor {
                 }
                 data.setSettings(player.getUniqueId(), new ClockSettings(current.enabled(), mode));
                 player.sendMessage("§aClock mode set to " + mode + "!");
-            }
-            case "info" -> {
-                String version = plugin.getDescription().getVersion();
-                String author = plugin.getDescription().getAuthors().isEmpty() ? "Unknown" : plugin.getDescription().getAuthors().getFirst();
-
-                ClockSettings settings = plugin.getPlayerDataHandler().getSettings(player.getUniqueId());
-                player.sendMessage("§4==== TakeYourTime ====");
-                player.sendMessage("§ePlugin: §f" + plugin.getDescription().getName());
-                player.sendMessage("§eVersion: §f" + version);
-                player.sendMessage("§eAuthor: §f" + author);
-                player.sendMessage("§eClock Enabled: §f" + settings.enabled());
-                player.sendMessage("§eDisplay Mode: §f" + settings.mode());
-                player.sendMessage("§4=======================");
             }
             default -> player.sendMessage("§eUsage: /clock <on|off|mode>");
         }
