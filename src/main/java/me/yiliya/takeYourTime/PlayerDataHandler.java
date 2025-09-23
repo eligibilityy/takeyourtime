@@ -36,7 +36,7 @@ public class PlayerDataHandler {
             String mode = config.getString(key + ".mode", "actionbar");
             playerSettings.put(uuid, new ClockSettings(enabled, mode));
         }
-        plugin.getLogger().info("[ClockPlugin] Player data loaded.");
+        plugin.getLogger().info("[TakeYourTime] Player data loaded.");
     }
 
     public void save() {
@@ -50,7 +50,7 @@ public class PlayerDataHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        plugin.getLogger().info("[ClockPlugin] Player data saved.");
+        plugin.getLogger().info("[TakeYourTime] Player data saved.");
     }
 
     public ClockSettings getSettings(UUID uuid) {
