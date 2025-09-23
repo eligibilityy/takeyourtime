@@ -1,5 +1,7 @@
-package me.yiliya.takeYourTime;
+package me.yiliya.takeYourTime.manager;
 
+import me.yiliya.takeYourTime.commands.ClockSettings;
+import me.yiliya.takeYourTime.TakeYourTime;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -21,35 +23,50 @@ public class PlayerDataHandler {
 
     public void load() {
         if (!file.exists()) {
+            File parent = file.getParentFile();
+            if (!parent.exists() && !parent.mkdirs()) {
+                plugin.getLogger().severe("Failed to create plugin data folder: " + parent.getPath());
+            }
+
             try {
-                file.getParentFile().mkdirs();
-                file.createNewFile();
+                if (!file.createNewFile()) {
+                    plugin.getLogger().severe("Failed to create playerdata.yml file!");
+                }
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().severe("Error creating playerdata.yml: " + e.getMessage());
             }
         }
+
         config = YamlConfiguration.loadConfiguration(file);
 
         for (String key : config.getKeys(false)) {
-            UUID uuid = UUID.fromString(key);
-            boolean enabled = config.getBoolean(key + ".enabled", false);
-            String mode = config.getString(key + ".mode", "actionbar");
-            playerSettings.put(uuid, new ClockSettings(enabled, mode));
+            try {
+                UUID uuid = UUID.fromString(key);
+                boolean enabled = config.getBoolean(key + ".enabled", false);
+                String mode = config.getString(key + ".mode", "actionbar");
+                playerSettings.put(uuid, new ClockSettings(enabled, mode));
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().warning("Invalid UUID found in playerdata.yml: " + key);
+            }
         }
+
         plugin.getLogger().info("[TakeYourTime] Player data loaded.");
     }
 
     public void save() {
-        for (UUID uuid : playerSettings.keySet()) {
-            ClockSettings settings = playerSettings.get(uuid);
+        for (Map.Entry<UUID, ClockSettings> entry : playerSettings.entrySet()) {
+            UUID uuid = entry.getKey();
+            ClockSettings settings = entry.getValue();
             config.set(uuid.toString() + ".enabled", settings.enabled());
             config.set(uuid + ".mode", settings.mode());
         }
+
         try {
             config.save(file);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().severe("Failed to save playerdata.yml: " + e.getMessage());
         }
+
         plugin.getLogger().info("[TakeYourTime] Player data saved.");
     }
 

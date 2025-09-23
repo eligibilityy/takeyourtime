@@ -1,9 +1,11 @@
-package me.yiliya.takeYourTime;
+package me.yiliya.takeYourTime.commands;
 
+import me.yiliya.takeYourTime.TakeYourTime;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 public class ClockCommand implements CommandExecutor {
     private final TakeYourTime plugin;
@@ -13,7 +15,7 @@ public class ClockCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage("Only players can use this command.");
             return true;

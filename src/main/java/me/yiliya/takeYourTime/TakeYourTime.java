@@ -1,33 +1,38 @@
 package me.yiliya.takeYourTime;
 
+import me.yiliya.takeYourTime.commands.ClockCommand;
+import me.yiliya.takeYourTime.commands.TakeYourTimeCommand;
+import me.yiliya.takeYourTime.commands.TytTabCompleter;
+import me.yiliya.takeYourTime.manager.ClockManager;
+import me.yiliya.takeYourTime.manager.PlayerDataHandler;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Objects;
 
 public final class TakeYourTime extends JavaPlugin {
 
-    private static TakeYourTime instance;
     private PlayerDataHandler playerDataHandler;
-    private ClockManager clockManager;
 
     @Override
     public void onEnable() {
-        instance = this;
+        TakeYourTime instance = this;
 
         saveDefaultConfig();
         updateConfigIfNeeded();
 
         // Load player data
-        playerDataHandler = new PlayerDataHandler(this);
+        playerDataHandler = new PlayerDataHandler(instance);
         playerDataHandler.load();
 
         // Register commands
-        getCommand("clock").setExecutor(new ClockCommand(this));
-        getCommand("clock").setTabCompleter(new TytTabCompleter());
+        Objects.requireNonNull(getCommand("clock")).setExecutor(new ClockCommand(instance));
+        Objects.requireNonNull(getCommand("clock")).setTabCompleter(new TytTabCompleter());
 
-        getCommand("tyt").setExecutor(new TakeYourTimeCommand(this));
-        getCommand("tyt").setTabCompleter(new TytTabCompleter());
+        Objects.requireNonNull(getCommand("tyt")).setExecutor(new TakeYourTimeCommand(instance));
+        Objects.requireNonNull(getCommand("tyt")).setTabCompleter(new TytTabCompleter());
 
         // Start clock manager
-        clockManager = new ClockManager(this);
+        ClockManager clockManager = new ClockManager(instance);
         clockManager.start();
 
         logStartup();

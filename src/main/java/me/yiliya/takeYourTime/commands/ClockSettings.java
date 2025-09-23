@@ -1,4 +1,4 @@
-package me.yiliya.takeYourTime;
+package me.yiliya.takeYourTime.commands;
 
 public record ClockSettings(boolean enabled, String mode) {
 }
