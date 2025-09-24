@@ -5,6 +5,7 @@ import me.yiliya.takeYourTime.commands.TakeYourTimeCommand;
 import me.yiliya.takeYourTime.commands.TytTabCompleter;
 import me.yiliya.takeYourTime.manager.ClockManager;
 import me.yiliya.takeYourTime.manager.PlayerDataHandler;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
@@ -12,27 +13,35 @@ import java.util.Objects;
 public final class TakeYourTime extends JavaPlugin {
 
     private PlayerDataHandler playerDataHandler;
+    private ClockManager clockManager;
 
     @Override
     public void onEnable() {
-        TakeYourTime instance = this;
+
+        // Version check
+        String version = Bukkit.getBukkitVersion(); // e.g., "1.20.1-R0.1-SNAPSHOT"
+        if (!version.startsWith("1.20") && !version.startsWith("1.21")) {
+            getLogger().severe("TakeYourTime requires at least Minecraft 1.20.1!");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         saveDefaultConfig();
         updateConfigIfNeeded();
 
-        // Load player data
-        playerDataHandler = new PlayerDataHandler(instance);
-        playerDataHandler.load();
+        // Initialize PlayerDataHandler (per-player async files)
+        playerDataHandler = new PlayerDataHandler(this);
+        playerDataHandler.loadAll(); // load all players asynchronously
 
         // Register commands
-        Objects.requireNonNull(getCommand("clock")).setExecutor(new ClockCommand(instance));
+        Objects.requireNonNull(getCommand("clock")).setExecutor(new ClockCommand(this));
         Objects.requireNonNull(getCommand("clock")).setTabCompleter(new TytTabCompleter());
 
-        Objects.requireNonNull(getCommand("tyt")).setExecutor(new TakeYourTimeCommand(instance));
+        Objects.requireNonNull(getCommand("tyt")).setExecutor(new TakeYourTimeCommand(this));
         Objects.requireNonNull(getCommand("tyt")).setTabCompleter(new TytTabCompleter());
 
         // Start clock manager
-        ClockManager clockManager = new ClockManager(instance);
+        clockManager = new ClockManager(this);
         clockManager.start();
 
         logStartup();
@@ -40,7 +49,9 @@ public final class TakeYourTime extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        playerDataHandler.save();
+        if (playerDataHandler != null) {
+            playerDataHandler.saveAll(); // save all player files asynchronously
+        }
         getLogger().info("TakeYourTime is stopping...");
     }
 
@@ -51,26 +62,16 @@ public final class TakeYourTime extends JavaPlugin {
         if (currentVersion < latestVersion) {
             getLogger().info("Updating config.yml to latest version...");
 
-            // Example: add missing keys with defaults
-            if (!getConfig().contains("update-interval"))
-                getConfig().set("update-interval", 20L);
-
-            if (!getConfig().contains("counter-mode"))
-                getConfig().set("counter-mode", "gametime");
-
-            if (!getConfig().contains("bossbar.defaultColor"))
-                getConfig().set("bossbar.defaultColor", "WHITE");
-            if (!getConfig().contains("bossbar.dawnColor"))
-                getConfig().set("bossbar.dawnColor", "PINK");
-            if (!getConfig().contains("bossbar.dayColor"))
-                getConfig().set("bossbar.dayColor", "BLUE");
-            if (!getConfig().contains("bossbar.duskColor"))
-                getConfig().set("bossbar.duskColor", "RED");
-            if (!getConfig().contains("bossbar.nightColor"))
-                getConfig().set("bossbar.nightColor", "PURPLE");
+            // Add missing keys with defaults
+            getConfig().addDefault("update-interval", 20L);
+            getConfig().addDefault("counter-mode", "gametime");
+            getConfig().addDefault("bossbar.defaultColor", "WHITE");
+            getConfig().addDefault("bossbar.dawnColor", "PINK");
+            getConfig().addDefault("bossbar.dayColor", "BLUE");
+            getConfig().addDefault("bossbar.duskColor", "RED");
+            getConfig().addDefault("bossbar.nightColor", "PURPLE");
 
             getConfig().set("config-version", latestVersion);
-
             saveConfig();
             getLogger().info("Config update complete.");
         }
@@ -80,11 +81,14 @@ public final class TakeYourTime extends JavaPlugin {
         String name = getDescription().getName();
         String version = getDescription().getVersion();
 
-        getLogger().info(name + " is running.");
-        getLogger().info("Installed version: " + version);
+        getLogger().info(name + " v" + version + " is running.");
     }
 
     public PlayerDataHandler getPlayerDataHandler() {
         return playerDataHandler;
+    }
+
+    public ClockManager getClockManager() {
+        return clockManager;
     }
 }

@@ -5,17 +5,16 @@
 counter-mode: gametime
 
 # Update interval in ticks (20 ticks = 1 second).
-update-interval: 20
+update-interval: 1200
 
 # Boss bar/progress bar color. Has optional phase colors.
 bossbar:
   # Default single color
   defaultColor: WHITE
 
-  # dawnColor:
-  # dayColor:
-  # duskColor:
-  # nightColor:
+  # dawnColor: RED
+  # dayColor: YELLOW
+  # duskColor: BLUE
+  # nightColor: PURPLE
 
-# Don't manipulate
 config-version: 1
