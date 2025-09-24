@@ -24,7 +24,7 @@ public class ClockManager {
     }
 
     public void start() {
-        long interval = plugin.getConfig().getLong("update-interval", 20L);
+        long interval = plugin.getConfig().getLong("update-interval", 1200L);
 
         new BukkitRunnable() {
             @Override
@@ -41,8 +41,6 @@ public class ClockManager {
                 String timeString = TimeUtils.parseTime(ticks) + " | Day " + days;
                 double progress = TimeUtils.getDayProgress(ticks);
 
-                BarColor barColor = TimeUtils.getColorByPhase(plugin, ticks);
-
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     ClockSettings settings = plugin.getPlayerDataHandler().getSettings(player.getUniqueId());
 
@@ -52,12 +50,15 @@ public class ClockManager {
                     }
 
                     if (settings.mode().equalsIgnoreCase("bossbar")) {
+                        BarColor barColor = TimeUtils.getColorByPhase(plugin, ticks);
                         BossBar bar = bossBars.computeIfAbsent(player.getUniqueId(),
                                 k -> Bukkit.createBossBar(timeString, barColor, BarStyle.SOLID));
                         bar.setTitle(timeString);
                         bar.setProgress(progress);
+
                         if (bar.getColor() != barColor) bar.setColor(barColor);
                         if (!bar.getPlayers().contains(player)) bar.addPlayer(player);
+
                     } else {
                         VersionSupport.sendActionBar(player, timeString);
                         removeBossBar(player);
